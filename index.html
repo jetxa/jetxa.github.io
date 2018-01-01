@@ -1,0 +1,302 @@
+---
+layout: default
+---
+
+<style>
+  .index-layout {
+    display: flex;
+    gap: 2.5rem;
+    margin-top: 0.5rem;
+  }
+  .post-list-area {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* 年份标题 */
+  .year-header {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin-top: 1.5rem;
+    margin-bottom: 0.8rem;
+  }
+  .year-header:first-child { margin-top: 0; }
+  .year-count {
+    font-size: 0.75rem;
+    color: #b0b8c4;
+    vertical-align: super;
+    margin-left: 0.2rem;
+    font-weight: 400;
+  }
+
+  /* 月份行 */
+  .month-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+  .month-row:last-child { border-bottom: none; }
+  .month-label {
+    width: 120px;
+    flex-shrink: 0;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #333;
+    padding-top: 0.1rem;
+  }
+  .month-count {
+    font-size: 0.7rem;
+    color: #b0b8c4;
+    vertical-align: super;
+    margin-left: 0.15rem;
+    font-weight: 400;
+  }
+  .month-posts {
+    flex: 1;
+    min-width: 0;
+  }
+  .month-post-item {
+    margin-bottom: 0.6rem;
+  }
+  .month-post-item:last-child { margin-bottom: 0; }
+  .month-post-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-decoration: none;
+  }
+  .month-post-title:hover { opacity: 0.7; text-decoration: none; }
+  .month-post-meta {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .post-cat-tag {
+    color: #3b82f6;
+    background: #eff6ff;
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
+  }
+  .post-tag-tag {
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
+  }
+  .month-post-desc {
+    font-size: 0.82rem;
+    color: #666;
+    margin-top: 0.15rem;
+  }
+
+  /* 标签栏 */
+  .tag-sidebar {
+    width: 150px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 4rem;
+    align-self: flex-start;
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+    padding-left: 1.5rem;
+    border-left: 1px solid rgba(0,0,0,0.06);
+  }
+  .tag-sidebar h3 {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+  .tag-sidebar a {
+    display: block;
+    font-size: 0.82rem;
+    padding: 0.15rem 0;
+    color: inherit;
+    opacity: 0.6;
+    text-decoration: none;
+  }
+  .tag-sidebar a:hover { opacity: 1; }
+  .tag-sidebar a.active { opacity: 1; font-weight: 700; }
+
+  @media (prefers-color-scheme: dark) {
+    .year-header { color: #e2e8f0; }
+    .month-label { color: #cbd5e1; }
+    .month-post-title { color: #e2e8f0; }
+    .month-post-desc { color: #94a3b8; }
+    .month-row { border-color: rgba(255,255,255,0.06); }
+    .tag-sidebar { border-color: rgba(255,255,255,0.06); }
+  }
+  @media (max-width: 768px) {
+    .index-layout { flex-direction: column; }
+    .month-label { width: 80px; }
+    .tag-sidebar {
+      width: 100%;
+      position: static;
+      border-left: none;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      padding-left: 0;
+      padding-top: 0.8rem;
+      max-height: none;
+    }
+    .tag-sidebar a { display: inline-block; margin-right: 0.8rem; }
+  }
+</style>
+
+<div class="index-layout">
+  <div class="post-list-area" id="post-list"></div>
+
+  <aside class="tag-sidebar" id="tag-sidebar">
+    <h3>标签</h3>
+    <div id="tag-list"></div>
+  </aside>
+</div>
+
+<script>
+  var MONTHS = ['', '1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  var posts = [
+    {% for post in site.posts %}
+    {
+      title: {{ post.title | jsonify }},
+      url: "{{ site.baseurl }}{{ post.url }}",
+      date: "{{ post.date | date: '%Y-%m-%d' }}",
+      year: {{ post.date | date: "%Y" }},
+      month: {{ post.date | date: "%-m" }},
+      categories: {{ post.categories | jsonify }},
+      tags: {{ post.tags | jsonify }},
+      description: {{ post.description | default: "" | jsonify }}
+    }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ];
+
+  var postListEl = document.getElementById('post-list');
+  var tagListEl = document.getElementById('tag-list');
+  var currentCategory = 'all';
+  var currentTag = null;
+
+  function getVisiblePosts() {
+    return posts.filter(function(p) {
+      var inCat = (currentCategory === 'all') || (p.categories.indexOf(currentCategory) !== -1);
+      var inTag = (!currentTag || currentTag === 'all') || (p.tags.indexOf(currentTag) !== -1);
+      return inCat && inTag;
+    });
+  }
+
+  function renderTimeline() {
+    var visible = getVisiblePosts();
+    if (visible.length === 0) {
+      postListEl.innerHTML = '<p style="color:#94a3b8;margin-top:2rem;">没有匹配的文章</p>';
+      return;
+    }
+
+    var html = '';
+    var lastYear = null;
+    var lastMonth = null;
+    var yearPosts = {};
+
+    // 先统计每年的文章数
+    visible.forEach(function(p) {
+      yearPosts[p.year] = (yearPosts[p.year] || 0) + 1;
+    });
+
+    // 按年月分组
+    var groups = {};
+    visible.forEach(function(p) {
+      var key = p.year + '-' + p.month;
+      if (!groups[key]) groups[key] = { year: p.year, month: p.month, posts: [] };
+      groups[key].posts.push(p);
+    });
+
+    var keys = Object.keys(groups).sort(function(a, b) { return b.localeCompare(a); });
+
+    keys.forEach(function(key) {
+      var g = groups[key];
+      if (g.year !== lastYear) {
+        html += '<div class="year-header">' + g.year + '<span class="year-count">' + yearPosts[g.year] + '</span></div>';
+        lastYear = g.year;
+      }
+      html += '<div class="month-row">';
+      html += '<div class="month-label">' + MONTHS[g.month] + '<span class="month-count">' + g.posts.length + '</span></div>';
+      html += '<div class="month-posts">';
+      g.posts.forEach(function(p) {
+        html += '<div class="month-post-item">';
+        html += '<a class="month-post-title" href="' + p.url + '">' + p.title + '</a>';
+        if (p.description) {
+          html += '<div class="month-post-desc">' + p.description + '</div>';
+        }
+        html += '<div class="month-post-meta"><span>' + p.date + '</span>';
+        if (p.categories && p.categories.length > 0) {
+          p.categories.forEach(function(c) {
+            html += '<span class="post-cat-tag">' + c + '</span>';
+          });
+        }
+        if (p.tags && p.tags.length > 0) {
+          p.tags.forEach(function(t) {
+            html += '<span class="post-tag-tag">#' + t + '</span>';
+          });
+        }
+        html += '</div>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    });
+
+    postListEl.innerHTML = html;
+  }
+
+  function getTagsForCategory(cat) {
+    var tagCount = {};
+    posts.forEach(function(p) {
+      if (cat === 'all' || p.categories.indexOf(cat) !== -1) {
+        p.tags.forEach(function(t) { tagCount[t] = (tagCount[t] || 0) + 1; });
+      }
+    });
+    return tagCount;
+  }
+
+  function renderTags(tagCount, activeTag) {
+    var keys = Object.keys(tagCount).sort();
+    var html = '<a href="#" class="tag-link' + (!activeTag ? ' active' : '') + '" data-tag="all">全部</a>';
+    keys.forEach(function(t) {
+      html += '<a href="#" class="tag-link' + (activeTag === t ? ' active' : '') + '" data-tag="' + t + '">' + t + ' (' + tagCount[t] + ')</a>';
+    });
+    tagListEl.innerHTML = html;
+    bindTagEvents();
+  }
+
+  document.querySelectorAll('.cat-nav').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      currentCategory = this.getAttribute('data-category');
+      currentTag = null;
+      document.querySelectorAll('.cat-nav').forEach(function(c) { c.classList.remove('active'); });
+      this.classList.add('active');
+      renderTags(getTagsForCategory(currentCategory), null);
+      renderTimeline();
+    });
+  });
+
+  function bindTagEvents() {
+    document.querySelectorAll('.tag-link').forEach(function(link) {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        currentTag = this.getAttribute('data-tag');
+        document.querySelectorAll('.tag-link').forEach(function(t) { t.classList.remove('active'); });
+        this.classList.add('active');
+        renderTimeline();
+      });
+    });
+  }
+
+  // 初始化
+  renderTags(getTagsForCategory('all'), null);
+  document.querySelector('.cat-nav[data-category="all"]').classList.add('active');
+  renderTimeline();
+</script>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{ page.title | default: site.title }}">
+  <title>{{ page.title | default: site.title }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&family=JetBrains+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="{{ site.baseurl }}/syntax.css">
+  {% if page.mathjax or site.mathjax %}
+  <script>
+    MathJax = { tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+  {% endif %}
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans SC', -apple-system, sans-serif;
+      color: #1a1a2e;
+      background: #fafafa;
+      line-height: 1.7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body { background: #0f172a; color: #e2e8f0; }
+      .site-header { background: #0f172a; border-color: #334155; }
+      a { color: #60a5fa; }
+      code { background: #1e293b; }
+      pre { background: #1e293b; border-color: #334155; }
+      blockquote { background: #1e293b; }
+      .site-footer { color: #94a3b8; border-color: #334155; }
+      th { background: #1e293b; }
+      th, td { border-color: #334155; }
+    }
+
+    .container {
+      max-width: 50%;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      width: 100%;
+    }
+
+    /* Header */
+    .site-header {
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0.75rem 0;
+      position: sticky;
+      top: 0;
+      background: #fafafa;
+      z-index: 100;
+    }
+
+    .site-header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .site-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .site-categories {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .site-categories a {
+      color: inherit;
+      text-decoration: none;
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    .site-categories a:hover, .site-categories a.active { opacity: 1; font-weight: 700; }
+
+    .site-nav a {
+      color: inherit;
+      text-decoration: none;
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    .site-nav a:hover { opacity: 1; }
+
+    /* Main */
+    .site-main { flex: 1; padding: 1.5rem 0; }
+
+    a { color: #3b82f6; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    strong, b { color: #0000ff; font-weight: bold; }
+
+    h1 { font-size: 1.5rem; margin-bottom: 0.8rem; }
+    h2 { font-size: 1.25rem; margin-top: 1.2rem; margin-bottom: 0.5rem; }
+    h3 { font-size: 1.1rem; margin-top: 1rem; margin-bottom: 0.4rem; }
+    p { margin-bottom: 0.6rem; }
+    ul, ol { padding-left: 1.5rem; margin-bottom: 0.6rem; }
+    li { margin-bottom: 0.2rem; }
+
+    blockquote {
+      border-left: 3px solid #3b82f6;
+      padding: 0.3rem 0.8rem;
+      margin: 0.6rem 0;
+      background: #f1f5f9;
+      border-radius: 0 4px 4px 0;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85em;
+      background: #f1f5f9;
+      padding: 0.1em 0.3em;
+      border-radius: 3px;
+    }
+
+    .code-wrapper { position: relative; }
+    
+    .copy-btn {
+      position: absolute;
+      top: 0.4rem;
+      right: 0.4rem;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.75rem;
+      color: #64748b;
+      background: #e2e8f0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    .code-wrapper:hover .copy-btn { opacity: 1; }
+    .copy-btn:hover { background: #cbd5e1; }
+    
+    pre {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      margin-bottom: 0.6rem;
+      display: flex;
+    }
+
+    pre code { 
+      background: none; 
+      padding: 0.8rem; 
+      flex: 1;
+      overflow-x: auto;
+    }
+    
+    .code-lines {
+      padding: 0.8rem 0.5rem;
+      text-align: right;
+      color: #94a3b8;
+      border-right: 1px solid #e2e8f0;
+      user-select: none;
+      font-size: 0.85em;
+      font-family: 'JetBrains Mono', monospace;
+      background: #f8fafc;
+      border-top-left-radius: 4px;
+      border-bottom-left-radius: 4px;
+    }
+
+    img { max-width: 100%; height: auto; }
+
+    table { width: 100%; border-collapse: collapse; margin-bottom: 0.6rem; }
+    th, td { border: 1px solid #e2e8f0; padding: 0.4rem 0.6rem; text-align: left; }
+    th { background: #f1f5f9; font-weight: 600; }
+
+    /* Footer */
+    .site-footer {
+      border-top: 1px solid #e2e8f0;
+      padding: 1rem 0;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.8rem;
+    }
+
+    #not-found { text-align: center; padding: 3rem 0; }
+
+    /* 公式方框（块级） */
+    mjx-container[display="true"] {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+    }
+
+    /* 行内公式方框 */
+    mjx-container:not([display="true"]) {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 3px;
+      padding: 0.1em 0.3em;
+      font-size: 0.95em;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      mjx-container[display="true"],
+      mjx-container:not([display="true"]) {
+        background: #1e293b;
+        border-color: #334155;
+      }
+      .copy-btn { background: #334155; color: #cbd5e1; }
+      .copy-btn:hover { background: #475569; }
+      .code-lines { background: #1e293b; border-color: #334155; }
+    }
+
+    @media (max-width: 640px) {
+      .container { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="site-title" href="{{ site.baseurl }}/">{{ site.title }}</a>
+      <nav class="site-categories">
+        <a href="{{ site.baseurl }}/" class="cat-nav" data-category="all">全部</a>
+        {% assign categories = site.posts | map: "categories" | flatten | uniq | sort %}
+        {% for cat in categories %}
+          <a href="#" class="cat-nav" data-category="{{ cat }}">{{ cat }}</a>
+        {% endfor %}
+      </nav>
+      <nav class="site-nav">
+        <a href="{{ site.baseurl }}/about">关于</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="site-main">
+    <div class="container">
+      {{ content }}
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      &copy; {{ site.time | date: "%Y" }} {{ site.author | default: site.title }}
+    </div>
+  </footer>
+
+  <script>
+    // 为代码块添加行号和复制按钮
+    document.querySelectorAll('.highlight pre').forEach(function(pre) {
+      var code = pre.querySelector('code');
+      if (!code) return;
+      
+      // 添加 wrapper 以便绝对定位复制按钮
+      var wrapper = document.createElement('div');
+      wrapper.className = 'code-wrapper';
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.appendChild(pre);
+      
+      // 生成复制按钮
+      var copyBtn = document.createElement('button');
+      copyBtn.className = 'copy-btn';
+      copyBtn.textContent = 'Copy';
+      copyBtn.onclick = function() {
+        navigator.clipboard.writeText(code.innerText).then(function() {
+          copyBtn.textContent = 'Copied!';
+          setTimeout(function() { copyBtn.textContent = 'Copy'; }, 2000);
+        });
+      };
+      wrapper.appendChild(copyBtn);
+      
+      // 生成行号
+      var lines = code.innerHTML.split('\n');
+      // 如果最后一行是空的，去掉它
+      if (lines[lines.length - 1].trim() === '') {
+        lines.pop();
+      }
+      var linesHtml = '';
+      for (var i = 1; i <= lines.length; i++) {
+        linesHtml += i + '<br>';
+      }
+      var linesDiv = document.createElement('div');
+      linesDiv.className = 'code-lines';
+      linesDiv.innerHTML = linesHtml;
+      
+      pre.insertBefore(linesDiv, code);
+    });
+  </script>
+</body>
+</html>

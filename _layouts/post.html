@@ -1,0 +1,215 @@
+---
+layout: default
+---
+
+<style>
+  .post-layout {
+    position: relative;
+  }
+  
+  /* 左侧目录容器，绝对定位在左侧外部 */
+  .post-toc-wrapper {
+    position: absolute;
+    top: 0;
+    right: 100%;
+    width: 250px; /* 或者 100% 以利用外部所有空间 */
+    height: 100%;
+    padding-right: 2.5rem;
+  }
+  
+  /* 左侧目录内容，使用 sticky 吸顶 */
+  .post-toc {
+    position: sticky;
+    top: 5rem;
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+    font-size: 0.85rem;
+    border-right: 1px solid rgba(0,0,0,0.06);
+    padding-right: 1rem;
+    width: 100%;
+  }
+  .post-toc h4 {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+    color: #1a1a2e;
+  }
+  .post-toc ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+  .post-toc li {
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .post-toc a {
+    color: #64748b;
+    text-decoration: none;
+    display: block;
+    transition: color 0.2s;
+  }
+  .post-toc a:hover {
+    color: #3b82f6;
+  }
+  .post-toc a.active {
+    color: #3b82f6;
+    font-weight: 700;
+  }
+  .post-toc .toc-h1 { padding-left: 0; font-weight: 600; }
+  .post-toc .toc-h2 { padding-left: 1rem; }
+  .post-toc .toc-h3 { padding-left: 2rem; }
+
+  /* 右侧正文 */
+  .post-body {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .post-page-desc {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin-top: 0.8rem;
+    margin-bottom: 0.8rem;
+    line-height: 1.6;
+    border-left: 3px solid #e2e8f0;
+    padding-left: 1rem;
+    background: #f8fafc;
+    padding: 0.8rem 1rem;
+    border-radius: 0 4px 4px 0;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    .post-page-desc {
+      background: #1e293b;
+      border-color: #334155;
+      color: #94a3b8;
+    }
+  }
+
+
+  /* 标题添加 # */
+  .post-body h1::before { content: "# "; color: #94a3b8; font-weight: normal; }
+  .post-body h2::before { content: "## "; color: #94a3b8; font-weight: normal; }
+  .post-body h3::before { content: "### "; color: #94a3b8; font-weight: normal; }
+  .post-body h4::before { content: "#### "; color: #94a3b8; font-weight: normal; }
+  .post-body h5::before { content: "##### "; color: #94a3b8; font-weight: normal; }
+  .post-body h6::before { content: "###### "; color: #94a3b8; font-weight: normal; }
+
+  @media (prefers-color-scheme: dark) {
+    .post-toc { border-color: rgba(255,255,255,0.06); }
+    .post-toc h4 { color: #e2e8f0; }
+  }
+
+  @media (max-width: 768px) {
+    .post-layout {
+      display: flex;
+      flex-direction: column-reverse;
+    }
+    .post-toc-wrapper {
+      position: static;
+      width: 100%;
+      height: auto;
+      padding-right: 0;
+    }
+    .post-toc {
+      width: 100%;
+      position: static;
+      margin-top: 2rem;
+      border-right: none;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      padding-top: 1rem;
+      padding-right: 0;
+    }
+  }
+</style>
+
+<div class="post-layout">
+  <div class="post-toc-wrapper">
+    <aside class="post-toc">
+      <h4>目录</h4>
+      <div id="toc-container"></div>
+    </aside>
+  </div>
+  
+  <div class="post-body">
+    <!-- 文章标题如果在正文中会自动加上 # -->
+    <h1>{{ page.title }}</h1>
+    
+    {% if page.description and page.description != "" %}
+    <div class="post-page-desc">
+      {{ page.description }}
+    </div>
+    {% endif %}
+    
+    <!-- 文章的日期等信息 -->
+    <p style="color: #94a3b8; font-size: 0.85em; margin-top: 0.5rem; margin-bottom: 2rem; font-family: 'JetBrains Mono', monospace;">
+      {{ page.date | date: "%Y-%m-%d" }}
+    </p>
+
+    {{ content }}
+    
+    <hr style="margin: 3rem 0 1.5rem; border: none; border-top: 1px solid rgba(0,0,0,0.06);">
+    <script src="https://utteranc.es/client.js"
+            repo="jetxa/jetxa.github.io"
+            issue-term="pathname"
+            theme="preferred-color-scheme"
+            crossorigin="anonymous"
+            async>
+    </script>
+  </div>
+</div>
+
+<script>
+  // 生成目录
+  var tocContainer = document.getElementById('toc-container');
+  var postBody = document.querySelector('.post-body');
+  var headings = postBody.querySelectorAll('h1, h2, h3');
+  
+  if (headings.length > 0) {
+    var ul = document.createElement('ul');
+    headings.forEach(function(h, index) {
+      if (!h.id) {
+        // 如果标题没有 id，给它生成一个，以便可以点击跳转
+        h.id = 'heading-' + index;
+      }
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      // 去掉可能包含的 ::before content，只取文本
+      a.textContent = h.innerText || h.textContent;
+      a.className = 'toc-' + h.tagName.toLowerCase();
+      
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+    tocContainer.appendChild(ul);
+  } else {
+    tocContainer.innerHTML = '<p style="color:#94a3b8;">暂无目录</p>';
+  }
+
+  // 滚动时高亮当前目录项
+  var tocLinks = document.querySelectorAll('.post-toc a');
+  window.addEventListener('scroll', function() {
+    var scrollPos = window.scrollY + 100;
+    var activeFound = false;
+    
+    // 倒序遍历，找到第一个在当前滚动位置以上的标题
+    for (var i = headings.length - 1; i >= 0; i--) {
+      var h = headings[i];
+      if (h.offsetTop <= scrollPos) {
+        tocLinks.forEach(function(l) { l.classList.remove('active'); });
+        if (tocLinks[i]) {
+          tocLinks[i].classList.add('active');
+        }
+        activeFound = true;
+        break;
+      }
+    }
+    
+    // 如果没有找到（比如在顶部），高亮第一个
+    if (!activeFound && tocLinks.length > 0) {
+      tocLinks.forEach(function(l) { l.classList.remove('active'); });
+      tocLinks[0].classList.add('active');
+    }
+  });
+</script>

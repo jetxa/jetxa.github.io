@@ -1,0 +1,9 @@
+title: Context Window
+baseurl: "" # the subpath of your site, e.g. /blog/
+url: https://jetxa.github.io # the base hostname & protocol for your site
+author: jet
+
+permalink: /:year/:month/:title.html
+markdown: kramdown
+mathjax: true
+
