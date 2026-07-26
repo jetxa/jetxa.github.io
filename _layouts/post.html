@@ -88,6 +88,9 @@ layout: default
 
 
   /* 标题添加 # */
+  .post-title {
+    color: #0000ff;
+  }
   .post-body h1::before { content: "# "; color: #94a3b8; font-weight: normal; }
   .post-body h2::before { content: "## "; color: #94a3b8; font-weight: normal; }
   .post-body h3::before { content: "### "; color: #94a3b8; font-weight: normal; }
@@ -96,6 +99,7 @@ layout: default
   .post-body h6::before { content: "###### "; color: #94a3b8; font-weight: normal; }
 
   @media (prefers-color-scheme: dark) {
+    .post-title { color: #60a5fa; } /* Adjusted blue for dark mode */
     .post-toc { border-color: rgba(255,255,255,0.06); }
     .post-toc h4 { color: #e2e8f0; }
   }
@@ -133,7 +137,7 @@ layout: default
   
   <div class="post-body">
     <!-- 文章标题如果在正文中会自动加上 # -->
-    <h1>{{ page.title }}</h1>
+    <h1 class="post-title">{{ page.title }}</h1>
     
     {% if page.description and page.description != "" %}
     <div class="post-page-desc">

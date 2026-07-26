@@ -103,8 +103,10 @@
     strong, b { color: #0000ff; font-weight: bold; }
 
     h1 { font-size: 1.5rem; margin-bottom: 0.8rem; }
-    h2 { font-size: 1.25rem; margin-top: 1.2rem; margin-bottom: 0.5rem; }
-    h3 { font-size: 1.1rem; margin-top: 1rem; margin-bottom: 0.4rem; }
+    h2 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+    h3 { font-size: 1.1rem; margin-bottom: 0.4rem; }
+    h4, h5, h6 { font-size: 1rem; margin-bottom: 0.4rem; }
+    * + h1, * + h2, * + h3, * + h4, * + h5, * + h6 { margin-top: 2.5rem; }
     p { margin-bottom: 0.6rem; }
     ul, ol { padding-left: 1.5rem; margin-bottom: 0.6rem; }
     li { margin-bottom: 0.2rem; }
@@ -232,7 +234,7 @@
         <a href="{{ site.baseurl }}/" class="cat-nav" data-category="all">全部</a>
         {% assign categories = site.posts | map: "categories" | flatten | uniq | sort %}
         {% for cat in categories %}
-          <a href="#" class="cat-nav" data-category="{{ cat }}">{{ cat }}</a>
+          <a href="{{ site.baseurl }}/?category={{ cat }}" class="cat-nav" data-category="{{ cat }}">{{ cat }}</a>
         {% endfor %}
       </nav>
       <nav class="site-nav">

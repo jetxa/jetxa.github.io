@@ -61,6 +61,12 @@ layout: default
     margin-bottom: 0.6rem;
   }
   .month-post-item:last-child { margin-bottom: 0; }
+  .month-post-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
   .month-post-title {
     font-size: 1rem;
     font-weight: 700;
@@ -71,7 +77,6 @@ layout: default
   .month-post-meta {
     font-size: 0.78rem;
     color: #94a3b8;
-    margin-top: 0.25rem;
     display: flex;
     align-items: center;
     gap: 0.4rem;
@@ -209,7 +214,8 @@ layout: default
     // 按年月分组
     var groups = {};
     visible.forEach(function(p) {
-      var key = p.year + '-' + p.month;
+      var padMonth = p.month < 10 ? '0' + p.month : p.month;
+      var key = p.year + '-' + padMonth;
       if (!groups[key]) groups[key] = { year: p.year, month: p.month, posts: [] };
       groups[key].posts.push(p);
     });
@@ -227,10 +233,8 @@ layout: default
       html += '<div class="month-posts">';
       g.posts.forEach(function(p) {
         html += '<div class="month-post-item">';
+        html += '<div class="month-post-header">';
         html += '<a class="month-post-title" href="' + p.url + '">' + p.title + '</a>';
-        if (p.description) {
-          html += '<div class="month-post-desc">' + p.description + '</div>';
-        }
         html += '<div class="month-post-meta"><span>' + p.date + '</span>';
         if (p.categories && p.categories.length > 0) {
           p.categories.forEach(function(c) {
@@ -242,7 +246,10 @@ layout: default
             html += '<span class="post-tag-tag">#' + t + '</span>';
           });
         }
-        html += '</div>';
+        html += '</div></div>';
+        if (p.description) {
+          html += '<div class="month-post-desc">' + p.description + '</div>';
+        }
         html += '</div>';
       });
       html += '</div></div>';
@@ -273,13 +280,19 @@ layout: default
 
   document.querySelectorAll('.cat-nav').forEach(function(link) {
     link.addEventListener('click', function(e) {
-      e.preventDefault();
-      currentCategory = this.getAttribute('data-category');
-      currentTag = null;
-      document.querySelectorAll('.cat-nav').forEach(function(c) { c.classList.remove('active'); });
-      this.classList.add('active');
-      renderTags(getTagsForCategory(currentCategory), null);
-      renderTimeline();
+      if (window.location.pathname === '{{ site.baseurl }}/' || window.location.pathname === '/') {
+        e.preventDefault();
+        currentCategory = this.getAttribute('data-category');
+        currentTag = null;
+        document.querySelectorAll('.cat-nav').forEach(function(c) { c.classList.remove('active'); });
+        this.classList.add('active');
+        
+        var newUrl = currentCategory === 'all' ? '{{ site.baseurl }}/' : '{{ site.baseurl }}/?category=' + encodeURIComponent(currentCategory);
+        window.history.pushState({}, '', newUrl);
+        
+        renderTags(getTagsForCategory(currentCategory), null);
+        renderTimeline();
+      }
     });
   });
 
@@ -296,7 +309,17 @@ layout: default
   }
 
   // 初始化
-  renderTags(getTagsForCategory('all'), null);
-  document.querySelector('.cat-nav[data-category="all"]').classList.add('active');
+  var urlParams = new URLSearchParams(window.location.search);
+  currentCategory = urlParams.get('category') || 'all';
+  
+  var catNavSelected = document.querySelector('.cat-nav[data-category="' + currentCategory + '"]');
+  if (catNavSelected) {
+    catNavSelected.classList.add('active');
+  } else {
+    document.querySelector('.cat-nav[data-category="all"]').classList.add('active');
+    currentCategory = 'all';
+  }
+  
+  renderTags(getTagsForCategory(currentCategory), null);
   renderTimeline();
 </script>
